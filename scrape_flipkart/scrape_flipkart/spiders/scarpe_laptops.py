@@ -1,7 +1,7 @@
 import scrapy
 from urllib.parse import urlencode
 
-API_key = 'ace1d4a22b164f3694148566b57fe2ba'
+API_KEY = 'ace1d4a22b164f3694148566b57fe2ba'
 
 def get_proxy_url(url):
     country = "IN"
