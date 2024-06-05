@@ -14,14 +14,6 @@ def get_proxy_url(url):
     proxy_url = "https://api.scrapingant.com/v2/general?" + urlencode(payload)
     return proxy_url
 
-from urllib.parse import urlencode
-API_KEY = "ace1d4a22b164f3694148566b57fe2ba"
-url = 'https://www.flipkart.com/computers/laptops/pr?sid=6bo,b5g&otracker=categorytree'
-
-
-
-proxy_url = "https://api.scrapingant.com/v2/general?" + urlencode(payload) + "&browser=false"
-print(str(proxy_url))
 
 class ScarpeLaptopsSpider(scrapy.Spider):
     name = "scarpe_laptops"
