@@ -1,13 +1,18 @@
 from urllib import response
 import scrapy
-from urllib.parse import urlencode
-from selectolax.parser import HTMLParser  
+from urllib.parse import urlencode, urljoin
+from selectolax.parser import HTMLParser
+from scrape_flipkart.items import ScrapeFlipkartItem  
 
 
 class ScrapeLaptopsSpider(scrapy.Spider):
     name = "scrape_laptops"
-    allowed_domains = ["www.flipkart.com"]
+    allowed_domains = ["www.flipkart.com", "api.scrapingant.com"]
     start_urls = ["https://www.flipkart.com/computers/laptops/pr?sid=6bo,b5g&otracker=categorytree"]
+
+    custom_settings = {
+        'FEEDS': { 'data.jsonl': { 'format': 'jsonlines',}}
+        }
 
     
     def get_proxy_url(self, url):
@@ -41,6 +46,65 @@ class ScrapeLaptopsSpider(scrapy.Spider):
             yield scrapy.Request(self.get_proxy_url(url), callback=self.parse)
 
 
+    def extract_details(self, html):
+        """
+        This function extract all detailed specification that are present in the product element in form of list 
+        """
+        details = []
+        for detail in html.css('li'):
+            details.append(self.extract_text(detail, text_strip=True))
+        return details
+    
+    
+    def check_class(self, html, element):
+        """
+        Checks whether selected element is present in the that html
+        """
+        try:
+            while html.css_matches(element):
+                return True
+        except AttributeError:
+            return False
+        
+    
+    def extract_no_rating(self, product):
+        string = self.extract_text(product.css_first('span.Wphh3N'))
+        if string is not None:
+            string = str(string)
+            no_of_rating = string.split(sep="&")[0]
+            return no_of_rating.strip()
+        else:
+            return None
+        
+
+    def extract_no_reviews(self, product):
+        string = self.extract_text(product.css_first('span.Wphh3N'))
+        if string is not None:
+            string = str(string)
+            no_of_reviews = string.split(sep="&")[1]
+            return no_of_reviews.strip()
+        else:
+            return None
+
+
     def parse(self, response):
         #Converting the repsonse to the selectolax praser
         html = HTMLParser(response.text)
+
+        #Select all the laptop element tags from the page
+        products = html.css('a.CGtC98')
+        laptop = ScrapeFlipkartItem()
+        
+        for product in products:
+            laptop['name'] = self.extract_text(product.css_first('div.KzDlHZ'))
+            laptop['selling_price'] = self.extract_text(product.css_first('div.Nx9bqj._4b5DiR'), text_strip=True)
+            laptop['max_retail_price'] = self.extract_text(product.css_first('div.yRaY8j.ZYYwLA'), text_strip=True)
+            laptop['specifications'] = self.extract_details(product)
+            laptop['free_delivery'] = self.check_class(product, 'div.yiggsN')
+            laptop['off_percentage'] = self.extract_text(product.css_first('.UkUFwK'))
+            laptop['f_assured'] = self.check_class(product, '.UkUFwK')
+            laptop['rating'] = self.extract_text(product.css_first('.XQDdHH'))
+            laptop['no_of_ratings'] = self.extract_no_rating(product)
+            laptop['no_of_reviews'] = self.extract_no_reviews(product)
+            laptop['url'] = urljoin(self.start_urls[0], product.css_first('a.CGtC98').attrs['href']) # type: ignore
+            yield laptop

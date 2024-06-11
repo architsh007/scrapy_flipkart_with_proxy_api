@@ -49,7 +49,7 @@ class ScarpeLaptopsSpider(scrapy.Spider):
             return details
         
         def extract_no_rating(product):
-            string = extract_text(product.css('span.Wphh3N')[0])
+            string = extract_text(product.css_first('span.Wphh3N'))
             if string is not None:
                 string = str(string)
                 no_of_rating = string.split(sep="&")[0]
@@ -58,7 +58,7 @@ class ScarpeLaptopsSpider(scrapy.Spider):
                 return None
             
         def extract_no_reviews(product):
-            string = extract_text(product.css('span.Wphh3N')[0])
+            string = extract_text(product.css_first('span.Wphh3N'))
             if string is not None:
                 string = str(string)
                 no_of_reviews = string.split(sep="&")[1]
