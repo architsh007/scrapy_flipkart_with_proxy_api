@@ -8,10 +8,10 @@ from scrape_flipkart.items import ScrapeFlipkartItem
 class ScrapeLaptopsSpider(scrapy.Spider):
     name = "scrape_laptops"
     allowed_domains = ["www.flipkart.com", "api.scrapingant.com"]
-    start_urls = ["https://www.flipkart.com/computers/laptops/pr?sid=6bo,b5g&otracker=categorytree"]
+    start_urls = ["https://www.flipkart.com/computers/laptops/pr?sid=6bo%2Cb5g&otracker=categorytree&page=1"]
 
     custom_settings = {
-        'FEEDS': { 'data.jsonl': { 'format': 'jsonlines',}}
+            'FEEDS': { 'data.jsonl': { 'format': 'jsonlines', 'overwrite' : True}},
         }
 
     
@@ -108,3 +108,10 @@ class ScrapeLaptopsSpider(scrapy.Spider):
             laptop['no_of_reviews'] = self.extract_no_reviews(product)
             laptop['url'] = urljoin(self.start_urls[0], product.css_first('a.CGtC98').attrs['href']) # type: ignore
             yield laptop
+
+        for _ in list(html.css('a._9QVEpD')): # type: ignore
+            if str.lower(_.text(strip=True)) == 'next':
+                next_page_url = urljoin(self.start_urls[0], _.css_first('a._9QVEpD').attrs['href']) # type: ignore
+
+                if next_page_url is not None:
+                    yield scrapy.Request(self.get_proxy_url(next_page_url), callback = self.parse)
