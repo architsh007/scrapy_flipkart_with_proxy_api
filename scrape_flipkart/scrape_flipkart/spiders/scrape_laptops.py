@@ -106,12 +106,12 @@ class ScrapeLaptopsSpider(scrapy.Spider):
             laptop['rating'] = self.extract_text(product.css_first('.XQDdHH'))
             laptop['no_of_ratings'] = self.extract_no_rating(product)
             laptop['no_of_reviews'] = self.extract_no_reviews(product)
-            laptop['url'] = urljoin(self.start_urls[0], product.css_first('a.CGtC98').attrs['href']) # type: ignore
+            laptop['url'] = urljoin(self.start_urls[0], product.css_first('a.CGtC98').attrs['href']) 
             yield laptop
 
-        for _ in list(html.css('a._9QVEpD')): # type: ignore
+        for _ in list(html.css('a._9QVEpD')): 
             if str.lower(_.text(strip=True)) == 'next':
-                next_page_url = urljoin(self.start_urls[0], _.css_first('a._9QVEpD').attrs['href']) # type: ignore
+                next_page_url = urljoin(self.start_urls[0], _.css_first('a._9QVEpD').attrs['href']) 
 
                 if next_page_url is not None:
                     yield scrapy.Request(self.get_proxy_url(next_page_url), callback = self.parse)
