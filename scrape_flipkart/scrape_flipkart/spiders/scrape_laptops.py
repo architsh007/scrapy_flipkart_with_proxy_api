@@ -19,7 +19,7 @@ class ScrapeLaptopsSpider(scrapy.Spider):
         """
         It takes url and convert it to the proxy url (scrapingant) for the request the required url
         """
-        API_KEY = 'ace1d4a22b164f3694148566b57fe2ba'
+        API_KEY = 'enter your scraping ant api key here'
         country = "IN"
         payload = {
             'url' : url,
